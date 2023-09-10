@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <head>
+        <title>{{ article.title }}</title>
+    </head>
+    <div class="container pt-5">
+        <div class="card rounded p-3 py-4">
+            <div class="d-flex justify-content-start">
+                <span class="badge bg-info mx-1">{{ article.author }}</span>
+                <span class="badge bg-secondary mx-1">{{ article.date }}</span>
+            </div>
+            <h3 class="list-group-item-heading">
+                <h4>{{ article.title }}</h4>
+            </h3>
+
+            <p class="text-break">
+                {{ article.content|safe }}
+                <br/>
+            </p>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <head>
+        <title>Регистрация</title>
+    </head>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div>
+            Логин<br>
+            {{ form.username }}<br>
+            Email<br>
+            {{ form.email }}<br>
+            Пароль<br>
+            {{ form.password1 }}<br>
+            Повторите пароль<br>
+            {{ form.password2 }}<br>
+
+
+            <!--<script src='https://www.google.com/recaptcha/api.js?&hl=ru'></script>
+            <div class="form-group g-recaptcha" data-sitekey=""></div>-->
+
+            <div>
+                {{ form.non_field_errors }}
+                {% if form.errors %}
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+                {% if messages %}
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <input type="submit" value="Зарегистрировать">
+        </div>
+    </form>
+{% endblock content %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <head>
+        <title>Профиль</title>
+    </head>
+
+    <div class="d-flex align-items-center justify-content-center h-75">
+        <div class="card p-3 py-4" style="width: 26rem;">
+            <div class="text-center">
+            <img src="https://i.imgur.com/stD0Q19.jpg" width="100" class="rounded-circle">
+                <h3 class="mt-2">{{ user.username }}</h3>
+                <div class="row mt-3 mb-3">
+
+                  <div class="col-md-4">
+                    <h6>Постов</h6>
+                    <span class="num">{{ count_article }}</span>
+                  </div>
+                  <div class="col-md-4">
+                  <h6>Подписчиков</h6>
+                    <span class="num">{{ count_subscribers }}</span>
+                  </div>
+                  <div class="col-md-4">
+                  <h6>Подписок</h6>
+                    <span class="num">{{ count_subscriptions }}</span>
+                  </div>
+
+                </div>
+
+                <hr class="line">
+
+                <p class="card-text">{{ user.bio }}</p>
+                {% if not self_profile %}
+                    {% if is_subscriber %}
+                        <div class="profile mt-5">
+                            <button class="profile_button px-5">Подписаться</button>
+                        </div>
+                    {% else %}
+                        <div class="profile mt-5">
+                            <button class="profile_button px-5">Вы подписаны</button>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    <!--
+
+    <div>id: {{ user.id }}</div>
+                    <div>Логин: {{ user.username }}</div>
+                    {% if not self_profile %}
+                        <div>Email: {{ user.email }}</div>
+                    {% endif %}
+                    {% if self_profile %}
+                        <div class="account-buttons">
+                            <a href="{% url 'update' %}" class="account-button">Редактировать профиль</a>
+                            <a href="{% url 'password_reset_auth' %}" class="account-button">Сбросить пароль</a>
+                        </div>
+                    {% endif %}
+    -->
+{% endblock content %}

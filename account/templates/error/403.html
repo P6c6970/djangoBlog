@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+доступ к запрошенному ресурсу запрещен
+{% block content %}
+    <head>
+        <title>Ошибка доступа</title>
+    </head>
+    <div class="d-flex align-items-center justify-content-center h-75">
+        <div class="text-center">
+            <h1 class="display-1 fw-bold">404</h1>
+            <p class="fs-3"> <span class="text-danger">Упс!</span> Доступ к запрошенному ресурсу запрещен.</p>
+            <p class="lead">
+                Похоже, у вас нет доступа к этой странице
+            </p>
+            <a href="{% url 'home' %}" class="btn btn-primary">На главную</a>
+        </div>
+    </div>
+{% endblock content %}

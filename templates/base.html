@@ -1,0 +1,62 @@
+<!--Что-то потерял?-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        {% load static %}
+        <link rel="icon" href="{% static 'img/favicon.ico' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" >
+        <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-dark navbar-dark shadow" data-bs-theme="dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}">Блог</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">О нас</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'articles' %}">Публикации</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Профиль
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                {% if user.is_authenticated %}
+                                    <li><a class="dropdown-item" href="{% url 'profile' %}">Профиль</a></li>
+                                    {% if user.is_superuser %}
+                                        <li><a class="dropdown-item" href="{% url 'admin:index' %}">Админка</a></li>
+                                    {% else %}
+                                        {% for group in user.groups.all %}
+                                            {% if group.name == 'redactor' %}
+                                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Админка</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url '_logout' %}">Выход</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{% url '_login' %}">Вход</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'register' %}">Регистрация</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                    </ul>
+                    <form class="d-flex mt-3" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Введите поисковый запрос">
+                        <button class="btn btn-outline-success" type="submit">Поиск</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+        {% block content %}
+        {% endblock content %}
+    </body>
+</html>

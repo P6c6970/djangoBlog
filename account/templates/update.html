@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <head>
+        <title>Редактирование</title>
+    </head>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div>
+            Логин<br>
+            {{ form.username }}<br>
+            Email<br>
+            {{ form.email }}<br>
+
+            <div>
+                {{ form.non_field_errors }}
+                {% if form.errors %}
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <input type="submit" value="Сохранить изменения">
+        </div>
+    </form>
+{% endblock content %}
