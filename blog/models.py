@@ -10,10 +10,10 @@ class Article(models.Model):
         ordering = ('-date',)
 
     title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=250)
+    slug = models.SlugField(max_length=250, unique=True)
     content = models.TextField(blank=True, null=True)
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    status = models.BooleanField("Статус публикации", default=True)
+    status = models.BooleanField("Статус публикации", default=False)
     date = models.DateTimeField("Дата публикации", auto_now=True)
 
     def __str__(self):
@@ -43,6 +43,9 @@ class LikeArticle(models.Model):
         (1, 'Лайк')
     )
     like_or_dislike = models.SmallIntegerField("Лайк или дизлайк", choices=CHOICES)
+
+    def __str__(self):
+        return self.article.title
 
 
 class LikeComment(models.Model):

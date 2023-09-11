@@ -1,3 +1,15 @@
 body {
  background-color: #ababab;
 }
+
+.icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.icon_pressed {
+    fill: #ffffff
+}
+
+
+

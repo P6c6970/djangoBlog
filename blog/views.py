@@ -1,6 +1,8 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+
+from utils.for_account import login_check
 from .models import Article, LikeArticle
 
 
@@ -11,18 +13,46 @@ def home_page(request):
 # @login_check()
 def articles_list(request):
     articles = Article.objects.filter(status=True)
+
     return render(request, 'articles_list.html', {'articles': articles})
 
 
-def article_detail(request, article):
-    article = get_object_or_404(Article, slug=article, status=True, )
-    return render(request, 'detail.html', {'article': article})
+def count_like_and_dislike(article_slug):
+    count_like = len(LikeArticle.objects.filter(article__slug=article_slug, like_or_dislike=1))
+    if count_like > 999:
+        count_like = f"{count_like // 1000} тыс."
+    count_dislike = len(LikeArticle.objects.filter(article__slug=article_slug, like_or_dislike=-1))
+    if count_dislike > 999:
+        count_dislike = f"{count_dislike // 1000} тыс."
+    return count_like, count_dislike
 
 
-def article_like_or_dislike(request, article):
-    if request.method == 'GET':
-        if request.GET.get("like"):
-            pass
-        elif request.GET.get("dislike"):
-            pass
-    return HttpResponseRedirect('/')
+@login_check()
+def article_detail(request, article_slug):
+    article = get_object_or_404(Article, slug=article_slug, status=True, )
+    count_like, count_dislike = count_like_and_dislike(article_slug)
+    user_like = LikeArticle.objects.filter(article=article, author=request.user).first()
+    return render(request, 'detail.html', {'article': article, 'count_like': count_like, 'count_dislike': count_dislike,
+                                           'user_like': user_like})
+
+
+@login_check()
+def article_like_or_dislike(request, article_slug):
+    # request.is_ajax() удалили, поэтому request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+    if request.method == "POST" and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        like_or_dislike = int(request.POST["like_or_dislike"])
+        try:
+            like = LikeArticle.objects.get(article__slug=article_slug, author=request.user)
+            print(like.like_or_dislike)
+            print(like_or_dislike)
+            if like.like_or_dislike == like_or_dislike:
+                like.delete()
+            else:
+                like.like_or_dislike = like_or_dislike
+                like.save()
+        except LikeArticle.DoesNotExist:
+            like = LikeArticle(article=get_object_or_404(Article, slug=article_slug, status=True, ), author=request.user, like_or_dislike=like_or_dislike)
+            like.save()
+
+    count_like, count_dislike = count_like_and_dislike(article_slug)
+    return JsonResponse({'count_like': count_like, 'count_dislike': count_dislike}, status=200)
