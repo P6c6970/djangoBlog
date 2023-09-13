@@ -1,3 +1,5 @@
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -7,13 +9,14 @@ from .models import Article, LikeArticle
 
 
 def home_page(request):
-    return render(request, 'home.html', {'title': "Привет?", })
+    articles = Article.objects.filter(status=True).annotate(likes=Coalesce(Sum("likearticle__like_or_dislike"), 0)).order_by("-likes", )
+    return render(request, 'home.html', {'articles': articles})
 
 
 # @login_check()
 def articles_list(request):
-    articles = Article.objects.filter(status=True)
-
+    # articles = Article.objects.filter(status=True)
+    articles = Article.objects.filter(status=True).annotate(likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
     return render(request, 'articles_list.html', {'articles': articles})
 
 
@@ -32,6 +35,8 @@ def article_detail(request, article_slug):
     article = get_object_or_404(Article, slug=article_slug, status=True, )
     count_like, count_dislike = count_like_and_dislike(article_slug)
     user_like = LikeArticle.objects.filter(article=article, author=request.user).first()
+    if user_like is not None:
+        user_like = user_like.like_or_dislike
     return render(request, 'detail.html', {'article': article, 'count_like': count_like, 'count_dislike': count_dislike,
                                            'user_like': user_like})
 
@@ -51,7 +56,8 @@ def article_like_or_dislike(request, article_slug):
                 like.like_or_dislike = like_or_dislike
                 like.save()
         except LikeArticle.DoesNotExist:
-            like = LikeArticle(article=get_object_or_404(Article, slug=article_slug, status=True, ), author=request.user, like_or_dislike=like_or_dislike)
+            like = LikeArticle(article=get_object_or_404(Article, slug=article_slug, status=True, ),
+                               author=request.user, like_or_dislike=like_or_dislike)
             like.save()
 
     count_like, count_dislike = count_like_and_dislike(article_slug)
