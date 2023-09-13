@@ -2,23 +2,26 @@
 
 {% block content %}
     <head>
-        <title>Последние обновления</title>
+        <title>{{ title }}</title>
     </head>
     <div class="container pt-5">
-        <h3>Последние обновления:</h3>
-        <ul class="list-group gap-3">
-            {% for article in articles %}
-                <li class="list-group-item rounded">
-                    <h3 class="list-group-item-heading">
-                        <h3><a href="{{ article.get_absolute_url }}" class="text-decoration-none text-reset">{{ article.title }}</a></h3>
-                    </h3>
-                    <p class="list-group-item-text lead" style="overflow-wrap: break-word;">
-                        {{ article.content|safe|slice:"80" }}{% if article.content|safe|length > 80 %}...{% endif %}
-                        <br/>
-                    </p>
-                    <div class="d-flex justify-content-between">
-                        <span class="badge bg-info mx-1">{{ article.author }}</span>
-                        <span class="badge mx-1
+        <h3>{{ title }}:</h3>
+        {% if articles %}
+            <ul class="list-group gap-3">
+                {% for article in articles %}
+                    <li class="list-group-item rounded">
+                        <h3 class="list-group-item-heading">
+                            <h3><a href="{{ article.get_absolute_url }}"
+                                   class="text-decoration-none text-reset">{{ article.title }}</a></h3>
+                        </h3>
+                        <p class="list-group-item-text lead" style="overflow-wrap: break-word;">
+                            {{ article.content|safe|slice:"80" }}{% if article.content|safe|length > 80 %}...{% endif %}
+                            <br/>
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <span class="badge bg-info mx-1"><a class="text-decoration-none text-reset"
+                                                                href="{{ article.author.get_absolute_url }}">{{ article.author }}</a></span>
+                            <span class="badge mx-1
                                     {% if article.likes == 0 %}
                                         bg-info
                                     {% elif article.likes > 0 %}
@@ -27,10 +30,20 @@
                                         bg-danger
                                     {% endif %}">
                             рейтинг: {{ article.likes }}</span>
-                        <span class="badge bg-secondary mx-1">{{ article.date }}</span>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
+                            <span class="badge bg-secondary mx-1">{{ article.date }}</span>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="d-flex align-items-center justify-content-center h-75">
+                <div class="text-center">
+                    <p class="fs-3"><span class="text-danger">Упс!</span> Тут пусто.</p>
+                    <p class="lead">
+                        {{ null_articles }}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock content %}
