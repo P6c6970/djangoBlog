@@ -4,14 +4,14 @@ from django.contrib.auth import views as auth_views
 from .forms import MySetPasswordForm
 
 # from utils.for_account import check_recaptcha
-# from .views import RegisterFormView, LoginFormView, LogoutView, profile, profile_
 
 urlpatterns = [
     # path('register/', check_recaptcha(views.RegisterFormView.as_view()), name="register"),
     path('register/', views.RegisterFormView.as_view(), name="register"),
     path('login/', views.LoginFormView.as_view(), name="_login"),
     path('logout/', views.LogoutView.as_view(), name="_logout"),
-    path('profile/', views.profile, name="profile"),
+    path('profile/id<int:id>/', views.profile, name="profile"),
+    path('profile/id<int:id>/follow/', views.ProfileFollowingCreateView.as_view(), name='follow'),
     path('update/', views.UpdateFormView.as_view(), name="update"),
     path('profile/<int:id>/', views.profile),
     path("password_reset", views.password_reset_request, name="password_reset"),

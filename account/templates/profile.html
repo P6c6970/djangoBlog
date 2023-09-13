@@ -1,29 +1,80 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    {% load static %}
     <head>
         <title>Профиль</title>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script type="text/javascript">
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            function ajax_follow() {
+                // создаем AJAX-вызов
+                $.ajax({
+                    headers: {"X-CSRFToken": getCookie("csrftoken")},
+                    url: "{{ user.get_absolute_url }}" + "follow/",
+                    type: 'POST',
+                    // если успешно, то
+                    success: function (response) {
+                        $("#count_followers").text(response.count_followers);
+                        if (response.is_follower){
+                            $("#follow").text("Вы подписаны");
+                        }
+                        else{
+                            $("#follow").text("Подписаться");
+                        }
+                        $("#follow").toggleClass("btn-outline-danger").toggleClass("btn-outline-secondary");
+                    },
+                    // если ошибка, то
+                    error: function (response) {
+                        // предупредим об ошибке
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            }
+
+            $(document).ready(function () {
+                $("#follow").click(function () {
+                    ajax_follow()
+                });
+            });
+        </script>
     </head>
 
     <div class="d-flex align-items-center justify-content-center h-75">
         <div class="card p-3 py-4" style="width: 26rem;">
             <div class="text-center">
-            <img src="https://i.imgur.com/stD0Q19.jpg" width="100" class="rounded-circle">
+                <img src="https://i.imgur.com/stD0Q19.jpg" width="100" class="rounded-circle">
                 <h3 class="mt-2">{{ user.username }}</h3>
                 <div class="row mt-3 mb-3">
 
-                  <div class="col-md-4">
-                    <h6>Постов</h6>
-                    <span class="num">{{ count_article }}</span>
-                  </div>
-                  <div class="col-md-4">
-                  <h6>Подписчиков</h6>
-                    <span class="num">{{ count_subscribers }}</span>
-                  </div>
-                  <div class="col-md-4">
-                  <h6>Подписок</h6>
-                    <span class="num">{{ count_subscriptions }}</span>
-                  </div>
+                    <div class="col-md-4">
+                        <h6>Постов</h6>
+                        <span class="num">{{ count_article }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Подписчиков</h6>
+                        <span id="count_followers" class="num">{{ count_followers }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Подписок</h6>
+                        <span class="num">{{ count_following }}</span>
+                    </div>
 
                 </div>
 
@@ -31,15 +82,20 @@
 
                 <p class="card-text">{{ user.bio }}</p>
                 {% if not self_profile %}
-                    {% if is_subscriber %}
                         <div class="profile mt-5">
-                            <button class="profile_button px-5">Подписаться</button>
+                            <button id="follow" class="btn profile_button px-5
+                                        {% if is_follower %}
+                                            btn-outline-secondary
+                                        {% else %}
+                                            btn-outline-danger
+                                        {% endif %}">
+                                {% if is_follower %}
+                                    Вы подписаны
+                                {% else %}
+                                    Подписаться
+                                {% endif %}
+                            </button>
                         </div>
-                    {% else %}
-                        <div class="profile mt-5">
-                            <button class="profile_button px-5">Вы подписаны</button>
-                        </div>
-                    {% endif %}
                 {% endif %}
             </div>
         </div>

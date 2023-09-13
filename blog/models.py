@@ -58,11 +58,6 @@ class LikeComment(models.Model):
     like_or_dislike = models.SmallIntegerField("Лайк или дизлайк", choices=CHOICES)
 
 
-class Subscribe(models.Model):
-    subject = models.ForeignKey(CustomUser, related_name='subjects', on_delete=models.CASCADE)
-    object = models.ForeignKey(CustomUser, related_name='objects', on_delete=models.CASCADE)
-
-
 class TagArticle(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)

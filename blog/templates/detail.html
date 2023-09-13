@@ -4,7 +4,7 @@
     {% load static %}
     <head>
         <title>{{ article.title }}</title>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
         <script type="text/javascript">
             function getCookie(name) {
                 var cookieValue = null;
@@ -25,7 +25,7 @@
             function ajax_like(like) {
                 // создаем AJAX-вызов
                 $.ajax({
-                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    headers: {"X-CSRFToken": getCookie("csrftoken")},
                     url: "{{ article.get_absolute_url }}" + "like/",
                     type: 'POST',
                     data: {'like_or_dislike': like},
@@ -33,6 +33,17 @@
                     success: function (response) {
                         $("#count_like").text(response.count_like);
                         $("#count_dislike").text(response.count_dislike);
+                        if (like) {
+                            $("#bt-like").toggleClass("icon_pressed");
+                            if ($("#bt-dislike").hasClass("icon_pressed")) {
+                                $("#bt-dislike").toggleClass("icon_pressed");
+                            }
+                        } else {
+                            $("#bt-dislike").toggleClass("icon_pressed");
+                            if ($("#bt-like").hasClass("icon_pressed")) {
+                                $("#bt-like").toggleClass("icon_pressed");
+                            }
+                        }
                     },
                     // если ошибка, то
                     error: function (response) {
@@ -43,20 +54,11 @@
                 return false;
             }
 
-
             $(document).ready(function () {
                 $("#bt-like").click(function () {
-                    $("#bt-like").toggleClass("icon_pressed");
-                    if ($("#bt-dislike").hasClass("icon_pressed")) {
-                        $("#bt-dislike").toggleClass("icon_pressed");
-                    }
                     ajax_like(1)
                 });
                 $("#bt-dislike").click(function () {
-                    $("#bt-dislike").toggleClass("icon_pressed");
-                    if ($("#bt-like").hasClass("icon_pressed")) {
-                        $("#bt-like").toggleClass("icon_pressed");
-                    }
                     ajax_like(-1)
                 });
             });

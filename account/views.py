@@ -2,11 +2,14 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.utils.decorators import method_decorator
 
 from .forms import SignUpFormWithRusError, AuthFormWithRusError, UserForgotPasswordForm
 from django.views.generic.edit import FormView
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
+
+from utils.for_account import login_check
 
 
 # Вариант регистрации на базе класса FormView
@@ -21,17 +24,16 @@ class RegisterFormView(FormView):
     template_name = "register.html"
 
     def form_valid(self, form):
-        #if self.request.recaptcha_is_valid:
-        if True:
-            form.save()
-            """
-            send_mail('Django mail', 'This e-mail was sent with Django.',
-                      'your_account@gmail.com', [form.cleaned_data.get("email")], fail_silently=False)
-            """
-            return super(RegisterFormView, self).form_valid(form)
+        # if self.request.recaptcha_is_valid:
+        form.save()
+        """
+        send_mail('Django mail', 'This e-mail was sent with Django.',
+        'your_account@gmail.com', [form.cleaned_data.get("email")], fail_silently=False)
+        """
+        return super(RegisterFormView, self).form_valid(form)
         # Функция super( тип [ , объект или тип ] )
         # Возвратите объект прокси, который делегирует вызовы метода родительскому или родственному классу типа .
-        return render(self.request, 'register.html', self.get_context_data())
+        # return render(self.request, 'register.html', self.get_context_data())
 
     def form_invalid(self, form):
         return super(RegisterFormView, self).form_invalid(form)
@@ -62,11 +64,11 @@ class LoginFormView(FormView):
         return super(LoginFormView, self).form_valid(form)
 
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views.generic.base import View
 from django.contrib.auth import logout
 
-
+@method_decorator(login_check(), name='dispatch')
 class LogoutView(View):
     def get(self, request):
         # Выполняем выход для пользователя, запросившего данное представление.
@@ -83,10 +85,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from .models import CustomUser
-#from utils.for_account import check_recaptcha
 
 
-#@check_recaptcha
+# from utils.for_account import check_recaptcha
+
+
+# @check_recaptcha
 def password_reset_request(request):
     if request.method == "POST":
         password_reset_form = UserForgotPasswordForm(request.POST)
@@ -132,30 +136,54 @@ class UserForgotPasswordFormView(FormView):
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from utils.for_account import login_check
-from blog.models import Article, Subscribe
+from blog.models import Article
+
 
 @login_check()
-def profile(request):
+def profile(request, id):
     context = {"self_profile": True, }
-    if request.GET.get('id') and request.user.id != int(request.GET['id']):
-        user = get_object_or_404(get_user_model(), id=request.GET['id'], is_active=True)
+    if request.user.id != id:
+        user = get_object_or_404(get_user_model(), id=id, is_active=True)
         context["self_profile"] = False
-        try:
-            obj = Subscribe.objects.get(object=user, subject=request.user)
-            context["is_subscriber"] = True
-        except Subscribe.DoesNotExist:
-            context["is_subscriber"] = False
+        if request.user in user.followers.all():
+            context["is_follower"] = True
+        else:
+            context["is_follower"] = False
     else:
         user = request.user
     context['user'] = user
     if context['user'].bio is None:
         context['user'].bio = "Пользователь еще не добавил описание"
     context['count_article'] = len(Article.objects.filter(author=user))
-    context['count_subscribers'] = len(Subscribe.objects.filter(object=user))
-    context['count_subscriptions'] = len(Subscribe.objects.filter(subject=user))
+    context['count_followers'] = len(user.followers.all())
+    context['count_following'] = len(user.following.all())
 
     return render(request, "profile.html", context)
+
+
+@method_decorator(login_check(), name='dispatch')
+class ProfileFollowingCreateView(View):
+    """
+    Создание подписки для пользователей
+    """
+    model = CustomUser
+
+    def is_ajax(self):
+        return self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    def post(self, request, id):
+        user = get_object_or_404(self.model, id=id)
+        if user.followers.contains(request.user):
+            user.followers.remove(request.user)
+            status = False
+        else:
+            user.followers.add(request.user)
+            status = True
+        data = {
+            'is_follower': status,
+            'count_followers': len(user.followers.all())
+        }
+        return JsonResponse(data, status=200)
 
 
 from .forms import CustomUserChangeFormRus

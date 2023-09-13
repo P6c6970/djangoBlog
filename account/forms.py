@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.core.exceptions import ValidationError
+
 from .models import CustomUser
 
 
@@ -20,8 +22,6 @@ class CustomUserChangeForm(UserChangeForm):
 class CustomUserChangeFormRus(UserChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
-        self.fields['email'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
 
     class Meta:
         model = CustomUser
@@ -32,12 +32,9 @@ class SignUpFormWithRusError(UserCreationForm):
     def __init__(self, *args, **kwargs):
         self.error_messages['password_mismatch'] = 'Пароли не совпадают!'
         super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
-        self.fields['password1'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
-        self.fields['password2'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
 
     email = forms.EmailField(max_length=200, help_text='Required',
-                             widget=forms.TextInput(attrs={'class': 'input_text'}))
+                             widget=forms.TextInput())
 
     class Meta:
         model = CustomUser

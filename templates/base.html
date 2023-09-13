@@ -3,9 +3,10 @@
     <head>
         <meta charset="utf-8">
         {% load static %}
-        <link rel="icon" href="{% static 'img/favicon.ico' %}">
-        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" >
-        <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+        <base href="{% static '/' %}">
+        <link rel="icon" type="text/css" href="{% static 'img/favicon.ico' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" >
+        <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
         <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     </head>
     <body>
@@ -29,7 +30,7 @@
                             </a>
                             <ul class="dropdown-menu pull-right">
                                 {% if user.is_authenticated %}
-                                    <li><a class="dropdown-item" href="{% url 'profile' %}">Профиль</a></li>
+                                    <li><a class="dropdown-item" href="{{ user.get_absolute_url }}">Профиль</a></li>
                                     {% if user.is_superuser %}
                                         <li><a class="dropdown-item" href="{% url 'admin:index' %}">Админка</a></li>
                                     {% else %}
