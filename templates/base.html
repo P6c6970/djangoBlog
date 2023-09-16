@@ -5,8 +5,8 @@
     {% load static %}
     <base href="{% static '/' %}">
     <link rel="icon" type="text/css" href="{% static 'img/favicon.ico' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap-5.3.2/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'bootstrap-5.3.2/js/bootstrap.bundle.min.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 </head>
 <body>
@@ -29,7 +29,9 @@
                     </a>
                     <ul class="dropdown-menu pull-right">
                         <li><a class="dropdown-item" href="{% url 'articles' %}">Публикации</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
 
                         <li><a class="dropdown-item" href="{% url 'articles_liked' %}">Понравившиеся</a></li>
                         <li><a class="dropdown-item" href="{% url 'articles_for_you' %}">Для вас</a></li>
@@ -55,7 +57,9 @@
                                 {% endfor %}
                             {% endif %}
 
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="{% url '_logout' %}">Выход</a></li>
                         {% else %}
                             <li><a class="dropdown-item" href="{% url '_login' %}">Вход</a></li>

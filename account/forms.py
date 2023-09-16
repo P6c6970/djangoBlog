@@ -32,9 +32,12 @@ class SignUpFormWithRusError(UserCreationForm):
     def __init__(self, *args, **kwargs):
         self.error_messages['password_mismatch'] = 'Пароли не совпадают!'
         super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'id': "typeLoginX", 'class': "form-control form-control-lg"})  # изменяет параметры поля ввода
+        self.fields['password1'].widget.attrs.update({'id': "typePassword1X", 'class': "form-control form-control-lg"})
+        self.fields['password2'].widget.attrs.update({'id': "typePassword2X", 'class': "form-control form-control-lg"})
 
     email = forms.EmailField(max_length=200, help_text='Required',
-                             widget=forms.TextInput())
+                             widget=forms.TextInput(attrs={'id': "typeEmailX", 'class': "form-control form-control-lg"}))
 
     class Meta:
         model = CustomUser
@@ -48,8 +51,8 @@ class AuthFormWithRusError(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         self.error_messages['invalid_login'] = 'Неверный логин или пароль!'
         super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
-        self.fields['password'].widget.attrs.update({'class': 'input_text', })  # изменяет параметры поля ввода
+        self.fields['username'].widget.attrs.update({'id': "typeLoginX", 'class': "form-control form-control-lg"})  # изменяет параметры поля ввода
+        self.fields['password'].widget.attrs.update({'id': "typePasswordX", 'class': "form-control form-control-lg"})  # изменяет параметры поля ввода
 
 
 from django.contrib.auth.forms import PasswordResetForm
