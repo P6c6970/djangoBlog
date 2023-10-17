@@ -7,7 +7,8 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from utils.for_account import login_check
-from .models import Article, LikeArticle
+from .froms import CommentForm
+from .models import Article, LikeArticle, Comment
 
 
 def home_page(request):
@@ -27,8 +28,10 @@ def articles_list(request):
 def articles_liked_list(request):
     articles = Article.objects.filter(status=True, likearticle__like_or_dislike=1,
                                       likearticle__author=request.user).annotate(
-                                            likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
-    return render(request, 'articles_list.html', {'title': "Понравившиеся", 'null_articles': "У вас еще нет понравившихся статей", 'articles': articles})
+        likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+    return render(request, 'articles_list.html',
+                  {'title': "Понравившиеся", 'null_articles': "У вас еще нет понравившихся статей",
+                   'articles': articles})
 
 
 @method_decorator(login_check(), name='dispatch')
@@ -43,7 +46,8 @@ class ArticleForYou(ListView):
 
     def get_queryset(self):
         authors = self.request.user.following.values_list('id', flat=True)
-        queryset = self.model.objects.all().filter(author__id__in=authors).annotate(likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+        queryset = self.model.objects.all().filter(author__id__in=authors).annotate(
+            likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -56,7 +60,7 @@ class ArticleForYou(ListView):
 @login_check()
 def articles_for_you_list(request):
     articles = Article.objects.filter(status=True, likearticle__author__in=request.user.followers).annotate(
-                                            likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+        likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
     return render(request, 'articles_list.html', {'articles': articles})
 
 
@@ -77,8 +81,9 @@ def article_detail(request, article_slug):
     user_like = LikeArticle.objects.filter(article=article, author=request.user).first()
     if user_like is not None:
         user_like = user_like.like_or_dislike
+    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True, )).order_by("-date", )
     return render(request, 'detail.html', {'article': article, 'count_like': count_like, 'count_dislike': count_dislike,
-                                           'user_like': user_like})
+                                           'user_like': user_like, 'comment_form': CommentForm, 'comments': comments})
 
 
 @login_check()
@@ -89,8 +94,6 @@ def article_like_or_dislike(request, article_slug):
         like_or_dislike = int(request.POST["like_or_dislike"])
         try:
             like = LikeArticle.objects.get(article__slug=article_slug, author=request.user)
-            print(like.like_or_dislike)
-            print(like_or_dislike)
             if like.like_or_dislike == like_or_dislike:
                 like.delete()
             else:
@@ -103,3 +106,24 @@ def article_like_or_dislike(request, article_slug):
 
     count_like, count_dislike = count_like_and_dislike(article_slug)
     return JsonResponse({'count_like': count_like, 'count_dislike': count_dislike}, status=200)
+
+
+@login_check()
+def article_add_comment(request, article_slug):
+    """ajax метод для лайков и дизлайков статей"""
+    if request.method == "POST" and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = Comment(article=get_object_or_404(Article, slug=article_slug, status=True, ),
+                              author=request.user,
+                              content=form.cleaned_data.get("comment_area"),
+                              parent_comment=form.cleaned_data.get("parent_comment")
+                              ).save()
+            return JsonResponse({}, status=200)
+    return JsonResponse({}, status=500)
+
+
+@login_check()
+def article_show_comments(request, article_slug):
+    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True, )).order_by("-date", )
+    return render(request, 'show_comments.html', {'comments': comments})

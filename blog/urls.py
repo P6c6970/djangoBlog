@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path
 
 from blog import views
 
@@ -11,6 +11,8 @@ urlpatterns = [
 
     path('articles/<slug:article_slug>/', views.article_detail, name='article_detail'),
     path('articles/<slug:article_slug>/like/', views.article_like_or_dislike, name='article_like'),
+    path('articles/<slug:article_slug>/add_comment/', views.article_add_comment, name='article_add_comment'),
+    path('articles/<slug:article_slug>/show_comments/', views.article_show_comments, name='show_comment'),
     # re_path(r'^(?P<article>[-\w]+)/$', views.article_detail, name='article_detail'),
 ]
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-tolerance_levels = {"admin": 0, "redactor": 1, "user": 2}
+tolerance_levels = {"admin": 0, "moderator": 1, "user": 2}
 
 
 def get_lvl_permission_name(name):
@@ -13,8 +13,8 @@ def get_lvl_permission_name(name):
 def get_lvl_permission(user):
     if user.is_superuser:
         return tolerance_levels["admin"]
-    elif user.groups.filter(name='redactor').exists():
-        return tolerance_levels["redactor"]
+    elif user.groups.filter(name='moderator').exists():
+        return tolerance_levels["moderator"]
     return tolerance_levels["user"]
 
 
@@ -52,7 +52,7 @@ def check_recaptcha(function):
         if request.method == 'POST':
             recaptcha_response = request.POST.get('g-recaptcha-response')
             data = {
-                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+                'secret': settings.RECAPTCHA_PRIVATE_KEY,
                 'response': recaptcha_response
             }
             r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)

@@ -24,16 +24,16 @@ class RegisterFormView(FormView):
     template_name = "register.html"
 
     def form_valid(self, form):
-        # if self.request.recaptcha_is_valid:
-        form.save()
-        """
-        send_mail('Django mail', 'This e-mail was sent with Django.',
-        'your_account@gmail.com', [form.cleaned_data.get("email")], fail_silently=False)
-        """
-        return super(RegisterFormView, self).form_valid(form)
-        # Функция super( тип [ , объект или тип ] )
-        # Возвратите объект прокси, который делегирует вызовы метода родительскому или родственному классу типа .
-        # return render(self.request, 'register.html', self.get_context_data())
+        if self.request.recaptcha_is_valid:
+            form.save()
+            """
+            send_mail('Django mail', 'This e-mail was sent with Django.',
+            'your_account@gmail.com', [form.cleaned_data.get("email")], fail_silently=False)
+            """
+            return super(RegisterFormView, self).form_valid(form)
+            # Функция super( тип [ , объект или тип ] )
+            # Возвратите объект прокси, который делегирует вызовы метода родительскому или родственному классу типа .
+        return render(self.request, 'register.html', self.get_context_data())
 
     def form_invalid(self, form):
         return super(RegisterFormView, self).form_invalid(form)

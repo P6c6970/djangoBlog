@@ -43,15 +43,19 @@
                                         {% if form.errors %}
                                             {% for field in form %}
                                                 {% for error in field.errors %}
-                                                    <p class="mb-2">234{{ error }}</p>
+                                                    <p class="mb-2">{{ error }}</p>
                                                 {% endfor %}
                                             {% endfor %}
                                         {% endif %}
                                         {% if messages %}
                                             {% for message in messages %}
-                                                <p class="mb-2">345{{ message }}</p>
+                                                <p class="mb-2">{{ message }}</p>
                                             {% endfor %}
                                         {% endif %}
+                                    </div>
+                                    <div class="mb-4" style="color-scheme: light;display: inline-block;">
+                                        <script src='https://www.google.com/recaptcha/api.js?&hl=ru&data-theme=dark'></script>
+                                        <div class="form-group g-recaptcha" data-sitekey="{{ RECAPTCHA_PUBLIC_KEY }}" data-theme="dark"></div>
                                     </div>
 
 

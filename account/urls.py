@@ -3,11 +3,10 @@ from account import views
 from django.contrib.auth import views as auth_views
 from .forms import MySetPasswordForm
 
-# from utils.for_account import check_recaptcha
+from utils.for_account import check_recaptcha
 
 urlpatterns = [
-    # path('register/', check_recaptcha(views.RegisterFormView.as_view()), name="register"),
-    path('register/', views.RegisterFormView.as_view(), name="register"),
+    path('register/', check_recaptcha(views.RegisterFormView.as_view()), name="register"),
     path('login/', views.LoginFormView.as_view(), name="_login"),
     path('logout/', views.LogoutView.as_view(), name="_logout"),
     path('profile/id<int:id>/', views.profile, name="profile"),

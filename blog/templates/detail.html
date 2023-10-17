@@ -57,6 +57,26 @@
                 return false;
             }
 
+            function ajax_post_comment() {
+                // создаем AJAX-вызов
+                $.ajax({
+                    headers: {"X-CSRFToken": getCookie("csrftoken")},
+                    url: "{{ article.get_absolute_url }}" + "add_comment/",
+                    type: 'POST',
+                    data: {'parent_comment': null, 'comment_area': $('#id_comment_area').val()},
+                    // если успешно, то
+                    success: function (response) {
+                        $('#comments-container').load('{{ article.get_absolute_url }}show_comments/');
+                    },
+                    // если ошибка, то
+                    error: function (response) {
+                        // предупредим об ошибке
+                        console.log(response.responseJSON.errors)
+                    }
+                });
+                return false;
+            }
+
             $(document).ready(function () {
                 $("#bt-like").click(function () {
                     ajax_like(1)
@@ -64,14 +84,19 @@
                 $("#bt-dislike").click(function () {
                     ajax_like(-1)
                 });
+                $('#comment-form').on('submit', function (event) {
+                    console.log("Нажал")
+                    event.preventDefault();
+                    ajax_post_comment($(this).serialize())
+                });
             });
         </script>
     </head>
     <div class="container pt-5">
         <div class="card rounded p-3 py-4">
             <div class="d-flex justify-content-start">
-                <span class="badge badge--info mx-1">{{ article.author }}</span>
-                <span class="badge badge--secondary mx-1">{{ article.date }}</span>
+                <span class="badge bg-info mx-1">{{ article.author }}</span>
+                <span class="badge bg-secondary mx-1">{{ article.date }}</span>
             </div>
             <h3 class="list-group-item-heading">
                 <h4>{{ article.title }}</h4>
@@ -102,8 +127,29 @@
                         <span id="count_dislike" class="badge">{{ count_dislike }}</span>
                     </button>
                 </div>
-
             </div>
         </div>
+        <form id="comment-form" action="" method="post">
+            {% csrf_token %}
+
+            <div class="card-footer py-3 border-0">
+                <div class="d-flex flex-start w-100">
+                    <img class="rounded-circle shadow-1-strong me-3"
+                         src="https://i.imgur.com/stD0Q19.jpg" alt="avatar" width="40"
+                         height="40"/>
+                    <div class="form-outline w-100">
+                        {{ comment_form.comment_area }}
+                        <!-- <textarea class="form-control" id="textAreaExample" rows="4"></textarea> -->
+                    </div>
+                </div>
+                <div class="float-end mt-2 pt-1">
+                    <button id="post-comment" type="submit" class="btn btn-primary btn-sm">Отправить</button>
+                </div>
+            </div>
+        </form>
+        <div id="comments-container">
+            {% include "show_comments.html" %}
+        </div>
+
     </div>
 {% endblock content %}

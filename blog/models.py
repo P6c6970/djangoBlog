@@ -29,7 +29,7 @@ class Comment(models.Model):
     content = models.TextField('Комментарий')
     date = models.DateTimeField('Дата комментария', default=timezone.now)
     parent_comment = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
-    is_active = models.BooleanField("Лайк или дизлайк", default=True)
+    is_active = models.BooleanField("Статус", default=True)
 
     def __str__(self):
         return self.content[0:200]
