@@ -14,12 +14,12 @@ class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ['email', 'username', 'is_staff', 'is_active']
     fieldsets = (
-        (None, {'fields': ('email', 'username', 'password', 'groups', 'is_staff', 'is_active')}),
+        (None, {'fields': ('email', 'username', 'avatar', 'bio', 'password', 'groups', 'is_staff', 'is_active')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'username', 'password1', 'password2', 'is_staff')}
+            'fields': ('email', 'username', 'avatar', 'bio', 'password1', 'password2', 'is_staff')}
          ),
     )
 

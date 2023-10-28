@@ -5,7 +5,7 @@ from django import forms
 from django.utils.decorators import method_decorator
 
 from .forms import SignUpFormWithRusError, AuthFormWithRusError, UserForgotPasswordForm
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, UpdateView
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 
@@ -151,9 +151,9 @@ def profile(request, id):
             context["is_follower"] = False
     else:
         user = request.user
-    context['user'] = user
-    if context['user'].bio is None:
-        context['user'].bio = "Пользователь еще не добавил описание"
+    context["user_profile"] = user
+    if context["user_profile"].bio is None:
+        context["user_profile"].bio = "Пользователь еще не добавил описание"
     context['count_article'] = len(Article.objects.filter(author=user))
     context['count_followers'] = len(user.followers.all())
     context['count_following'] = len(user.following.all())
@@ -187,30 +187,34 @@ class ProfileFollowingCreateView(View):
 
 
 from .forms import CustomUserChangeFormRus
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 
-# @login_check()
-class UpdateFormView(FormView):
-    # Указажем какую форму мы будем использовать для регистрации наших пользователей, в нашем случае
-    # это UserCreationForm - стандартный класс Django унаследованный, заменил на SignUpForm из forms
+@method_decorator(login_check(), name='dispatch')
+class UpdateFormView(UpdateView):
+    model = CustomUser
     form_class = CustomUserChangeFormRus
-    # Ссылка, на которую будет перенаправляться пользователь в случае успешной регистрации.
-    # В данном случае указана ссылка на страницу входа для зарегистрированных пользователей.
-    success_url = "/account/profile/"
-    # Шаблон, который будет использоваться при отображении представления.
     template_name = "update.html"
 
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование профиля пользователя: {self.request.user.username}'
+        return context
+
     def form_valid(self, form):
-        self.request.user.username = form.cleaned_data['username']
-        self.request.user.email = form.cleaned_data['email']
-        self.request.user.save()
+        print(form.cleaned_data.get('avatar', False))
+        form.save()
 
         return super(UpdateFormView, self).form_valid(form)
 
     def form_invalid(self, form):
         return super(UpdateFormView, self).form_invalid(form)
 
+    def get_success_url(self):
+        return reverse_lazy('profile', kwargs={'id': self.request.user.id})
 
 def password_reset_request_auth(request):
     email = request.user.email

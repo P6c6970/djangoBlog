@@ -16,10 +16,19 @@ class CustomUser(AbstractUser):
     avatar = models.ImageField(null=True, blank=True, upload_to="images/avatar/")
 
     def get_avatar(self):
-        return os.path.basename(self.avatar.path)
+        if not self.avatar:
+            return '/media/images/avatar/none.jpg'
+        return self.avatar.url
 
     def get_absolute_url(self):
         return reverse('profile', args=[self.id])
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            this_record = CustomUser.objects.get(pk=self.pk)
+            if this_record.avatar != self.avatar:
+                this_record.avatar.delete(save=False)
+        super(CustomUser, self).save(*args, **kwargs)
 
 
 class BanIp(models.Model):

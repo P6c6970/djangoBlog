@@ -26,15 +26,14 @@
                 // создаем AJAX-вызов
                 $.ajax({
                     headers: {"X-CSRFToken": getCookie("csrftoken")},
-                    url: "{{ user.get_absolute_url }}" + "follow/",
+                    url: "{{ user_profile.get_absolute_url }}" + "follow/",
                     type: 'POST',
                     // если успешно, то
                     success: function (response) {
                         $("#count_followers").text(response.count_followers);
-                        if (response.is_follower){
+                        if (response.is_follower) {
                             $("#follow").text("Вы подписаны");
-                        }
-                        else{
+                        } else {
                             $("#follow").text("Подписаться");
                         }
                         $("#follow").toggleClass("btn-outline-danger").toggleClass("btn-outline-secondary");
@@ -59,8 +58,8 @@
     <div class="d-flex align-items-center justify-content-center h-75">
         <div class="card p-3 py-4" style="width: 26rem;">
             <div class="text-center">
-                <img src="https://i.imgur.com/stD0Q19.jpg" width="100" class="rounded-circle">
-                <h3 class="mt-2">{{ user.username }}</h3>
+                <img src="{{ user_profile.get_avatar }}" width="100" class="rounded-circle">
+                <h3 class="mt-2">{{ user_profile.username }}</h3>
                 <div class="row mt-3 mb-3">
 
                     <div class="col-md-4">
@@ -80,22 +79,28 @@
 
                 <hr class="line">
 
-                <p class="card-text">{{ user.bio }}</p>
+                <p class="card-text">{{ user_profile.bio }}</p>
                 {% if not self_profile %}
-                        <div class="profile mt-5">
-                            <button id="follow" class="btn profile_button px-5
+                    <div class="profile mt-5">
+                        <button id="follow" class="btn profile_button px-5
                                         {% if is_follower %}
                                             btn-outline-secondary
                                         {% else %}
                                             btn-outline-danger
                                         {% endif %}">
-                                {% if is_follower %}
-                                    Вы подписаны
-                                {% else %}
-                                    Подписаться
-                                {% endif %}
-                            </button>
-                        </div>
+                            {% if is_follower %}
+                                Вы подписаны
+                            {% else %}
+                                Подписаться
+                            {% endif %}
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="profile mt-5">
+                        <a href="{% url 'update' %}" class="btn profile_button px-5 btn-outline-secondary">
+                            Редактировать профиль
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>

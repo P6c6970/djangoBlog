@@ -4,25 +4,76 @@
     <head>
         <title>Редактирование</title>
     </head>
-    <form action="" method="post">
+    <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <div>
-            Логин<br>
-            {{ form.username }}<br>
-            Email<br>
-            {{ form.email }}<br>
+        <section class="vh-100 gradient-custom">
+            <div class="container py-5 h-100">
+                <div class="row d-flex justify-content-center align-items-center h-100">
+                    <div class="col-12 col-md-8 col-lg-6 col-xl-5" data-bs-theme="dark">
+                        <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                            <div class="card-body p-5 text-center">
 
-            <div>
-                {{ form.non_field_errors }}
-                {% if form.errors %}
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    {% endfor %}
-                {% endif %}
+                                <div class="mb-md-5 mt-md-4 pb-5">
+
+                                    <h2 class="fw-bold mb-2 text-uppercase">Редактирование профиля</h2>
+                                    <p class="text-white-50 mb-5">Введите свои данные!</p>
+
+
+                                    <div class="form-floating form-white mb-4">
+                                        {{ form.username }}
+                                        <label class="form-label" for="typeLoginX">Логин</label>
+                                    </div>
+                                    <div class="form-floating form-white mb-4">
+                                        {{ form.email }}
+                                        <label class="form-label" for="typeEmailX">Email</label>
+                                    </div>
+                                    <div class="form-floating form-white mb-4">
+                                        {{ form.bio }}
+                                        <label class="form-label" for="typePassword1X">О себе</label>
+                                    </div>
+
+                                    {{ form.avatar }}
+
+                                    <div class="text-danger mb-4">
+                                        {% if form.non_field_errors %}
+                                            <p class="mb-2">123{{ form.non_field_errors.as_text }}</p>
+                                        {% endif %}
+                                        {% if form.errors %}
+                                            {% for field in form %}
+                                                {% for error in field.errors %}
+                                                    <p class="mb-2">{{ error }}</p>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if messages %}
+                                            {% for message in messages %}
+                                                <p class="mb-2">{{ message }}</p>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="mb-4" style="color-scheme: light;display: inline-block;">
+                                        <script src='https://www.google.com/recaptcha/api.js?&hl=ru&data-theme=dark'></script>
+                                        <div class="form-group g-recaptcha" data-sitekey="{{ RECAPTCHA_PUBLIC_KEY }}" data-theme="dark"></div>
+                                    </div>
+
+
+                                    <button class="btn btn-outline-light btn-lg px-5" type="submit">Сохранить изменения
+                                    </button>
+
+
+                                </div>
+
+                                <!--<div>
+                                    <p class="mb-0">Уже есть аккаунт?
+                                        <a href="{% url '_login' %}"
+                                           class="text-white-50 fw-bold">Войти</a>
+                                    </p>
+                                </div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <input type="submit" value="Сохранить изменения">
-        </div>
+        </section>
     </form>
 {% endblock content %}
