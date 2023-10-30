@@ -25,7 +25,8 @@ class CustomUserChangeFormRus(forms.ModelForm):
     email = forms.EmailField(required=True,
                              widget=forms.TextInput(attrs={'class': 'form-control'}))
     avatar = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control-file'}))
-    bio = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5}))
+    bio = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': 'form-control',
+                                                                       'style': 'height: 150px'}))
 
     class Meta:
         model = CustomUser
@@ -42,13 +43,11 @@ class CustomUserChangeFormRus(forms.ModelForm):
 
     def clean_avatar(self):
         image = self.cleaned_data.get('avatar', False)
-        print(image)
         if image:
             if image.size > 4 * 1024 * 1024:
                 raise forms.ValidationError("Image file too large ( > 4mb )")
             return image
-        else:
-            raise forms.ValidationError("Couldn't read uploaded image")
+        return None
 
 
 class SignUpFormWithRusError(UserCreationForm):

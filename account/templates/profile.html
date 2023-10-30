@@ -63,16 +63,20 @@
                 <div class="row mt-3 mb-3">
 
                     <div class="col-md-4">
-                        <h6>Постов</h6>
-                        <span class="num">{{ count_article }}</span>
+                        <a class="text-decoration-none text-reset" href="{% url 'my_articles_list' %}">
+                            <h6>Постов</h6>
+                            <span class="num">{{ count_article }}</span>
+                        </a>
                     </div>
                     <div class="col-md-4">
                         <h6>Подписчиков</h6>
                         <span id="count_followers" class="num">{{ count_followers }}</span>
                     </div>
                     <div class="col-md-4">
-                        <h6>Подписок</h6>
-                        <span class="num">{{ count_following }}</span>
+                        <a class="text-decoration-none text-reset" href="{% url 'my_following' %}">
+                            <h6>Подписок</h6>
+                            <span class="num">{{ count_following }}</span>
+                        </a>
                     </div>
 
                 </div>

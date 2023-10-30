@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <head>
+        <title>{{ title }}</title>
+    </head>
+    <div class="container my-2 py-5">
+        <h3>{{ title }}:</h3>
+        {% if user.following.count %}
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-12 col-lg-10 col-xl-8">
+                    {% for following in user.following.all %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <a class="text-decoration-none text-reset"
+                                   href="{{ following.get_absolute_url }}">
+                                    <div class="d-flex flex-start align-items-center">
+                                        <img class="rounded-circle shadow-1-strong me-3"
+                                             src="{{ following.get_avatar }}" alt="avatar"
+                                             width="40"
+                                             height="40"/>
+                                        <div>
+                                            <h6 class="fw-bold text-primary mb-1">{{ following.username }}</h6>
+                                        </div>
+                                    </div>
+
+                                    <p class="mt-3 mb-2 pb-2">
+                                        {{ following.bio }}
+                                    </p>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="d-flex align-items-center justify-content-center h-75">
+                <div class="text-center">
+                    <p class="fs-3"><span class="text-danger">Упс!</span> Тут пусто.</p>
+                    <p class="lead">
+                        {{ null_following }}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}

@@ -9,7 +9,7 @@ from django.views.generic.edit import FormView, UpdateView
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 
-from utils.for_account import login_check
+from utils.for_account import login_check, check_recaptcha
 
 
 # Вариант регистрации на базе класса FormView
@@ -67,6 +67,7 @@ class LoginFormView(FormView):
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.generic.base import View
 from django.contrib.auth import logout
+
 
 @method_decorator(login_check(), name='dispatch')
 class LogoutView(View):
@@ -190,6 +191,7 @@ from .forms import CustomUserChangeFormRus
 from django.urls import reverse, reverse_lazy
 
 
+@method_decorator(check_recaptcha, name='dispatch')
 @method_decorator(login_check(), name='dispatch')
 class UpdateFormView(UpdateView):
     model = CustomUser
@@ -205,16 +207,17 @@ class UpdateFormView(UpdateView):
         return context
 
     def form_valid(self, form):
-        print(form.cleaned_data.get('avatar', False))
-        form.save()
-
-        return super(UpdateFormView, self).form_valid(form)
+        if self.request.recaptcha_is_valid:
+            form.save()
+            return super(UpdateFormView, self).form_valid(form)
+        return super(UpdateFormView, self).form_invalid(form)
 
     def form_invalid(self, form):
         return super(UpdateFormView, self).form_invalid(form)
 
     def get_success_url(self):
         return reverse_lazy('profile', kwargs={'id': self.request.user.id})
+
 
 def password_reset_request_auth(request):
     email = request.user.email

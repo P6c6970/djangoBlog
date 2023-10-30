@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 import os
 
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 
 class CustomUser(AbstractUser):
@@ -19,6 +20,11 @@ class CustomUser(AbstractUser):
         if not self.avatar:
             return '/media/images/avatar/none.jpg'
         return self.avatar.url
+
+    # method to create a fake table field in read only mode
+    def avatar_tag(self):
+        return mark_safe('<img src="%s" width="50" height="50" />' % self.get_avatar())
+
 
     def get_absolute_url(self):
         return reverse('profile', args=[self.id])

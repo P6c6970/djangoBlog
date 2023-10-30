@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
+from account.models import CustomUser
 from utils.for_account import login_check
 from .froms import CommentForm
 from .models import Article, LikeArticle, Comment
@@ -22,6 +23,13 @@ def articles_list(request):
     # articles = Article.objects.filter(status=True)
     articles = Article.objects.filter(status=True).annotate(likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
     return render(request, 'articles_list.html', {'title': "Последние обновления", 'articles': articles})
+
+
+@login_check()
+def my_articles_list(request):
+    articles = Article.objects.filter(status=True, author=request.user).annotate(likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+    return render(request, 'articles_list.html', {'title': "Ваши статьи", 'articles': articles,
+                                                  'null_articles': "У вас еще нет статей"})
 
 
 @login_check()
@@ -55,6 +63,13 @@ class ArticleForYou(ListView):
         context['title'] = 'Статьи ваших авторов'
         context['null_articles'] = "У вас еще нет статей этой подборки, подписывайтесь на авторов чтобы исправить это"
         return context
+
+
+@login_check()
+def my_following(request):
+    null_following = "У вас еще нет подписок, подписывайтесь на авторов чтобы исправить это"
+    return render(request, 'your_following_list.html', {'title': 'Ваши авторы',
+                                                        'null_following': null_following})
 
 
 @login_check()
