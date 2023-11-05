@@ -18,6 +18,15 @@ def home_page(request):
     return render(request, 'articles_list.html', {'title': "Популярное", 'articles': articles})
 
 
+def search(request):
+    question = request.GET.get('q')
+    if question is not None:
+        articles = Article.objects.filter(status=True, content__icontains=question).annotate(
+            likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+        return render(request, 'articles_list.html', {'title': "Результат поиска", 'articles': articles})
+    return render(request, 'articles_list.html', {'title': "Поиск"})
+
+
 # @login_check()
 def articles_list(request):
     # articles = Article.objects.filter(status=True)
@@ -27,7 +36,8 @@ def articles_list(request):
 
 @login_check()
 def my_articles_list(request):
-    articles = Article.objects.filter(status=True, author=request.user).annotate(likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+    articles = Article.objects.filter(status=True, author=request.user).annotate(
+        likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
     return render(request, 'articles_list.html', {'title': "Ваши статьи", 'articles': articles,
                                                   'null_articles': "У вас еще нет статей"})
 
@@ -96,7 +106,8 @@ def article_detail(request, article_slug):
     user_like = LikeArticle.objects.filter(article=article, author=request.user).first()
     if user_like is not None:
         user_like = user_like.like_or_dislike
-    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True, )).order_by("-date", )
+    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True),
+                                      parent_comment__isnull=True)
     return render(request, 'detail.html', {'article': article, 'count_like': count_like, 'count_dislike': count_dislike,
                                            'user_like': user_like, 'comment_form': CommentForm, 'comments': comments})
 
@@ -132,7 +143,7 @@ def article_add_comment(request, article_slug):
             comment = Comment(article=get_object_or_404(Article, slug=article_slug, status=True, ),
                               author=request.user,
                               content=form.cleaned_data.get("comment_area"),
-                              parent_comment=form.cleaned_data.get("parent_comment")
+                              parent_comment=Comment.objects.filter(id=form.cleaned_data.get("parent_comment")).first()
                               ).save()
             return JsonResponse({}, status=200)
     return JsonResponse({}, status=500)
@@ -140,5 +151,6 @@ def article_add_comment(request, article_slug):
 
 @login_check()
 def article_show_comments(request, article_slug):
-    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True, )).order_by("-date", )
-    return render(request, 'show_comments.html', {'comments': comments})
+    article = get_object_or_404(Article, slug=article_slug, status=True, )
+    comments = Comment.objects.filter(article=article, parent_comment__isnull=True)
+    return render(request, 'show_comments.html', {'article': article, 'comments': comments, 'comment_form': CommentForm})

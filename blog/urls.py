@@ -5,6 +5,7 @@ from blog import views
 
 urlpatterns = [
     path('home/', views.home_page, name="home"),
+    path('search/', views.search, name="search"),
     path('articles/', views.articles_list, name="articles"),
     path('articles/liked/', views.articles_liked_list, name='articles_liked'),
     path('articles/for_you/', views.ArticleForYou.as_view(), name='articles_for_you'),
