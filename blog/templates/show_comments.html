@@ -3,25 +3,32 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script type="text/javascript" src="js/articles.js"></script>
     <script type="text/javascript">
-            $(document).ready(function () {
-                $('.comment-form').on('submit', function (event) {
-                    event.preventDefault();
-                    ajax_post_comment("{{ article.get_absolute_url }}", event.currentTarget[1].value, event.currentTarget[2].value)
-                });
-                $('.reply-comment').click(function () {
-                    $('.reply-comment').toggle(false);
-                    $(this).closest('.card').children(".reply-comment").toggle();
-                });
+        $(document).ready(function () {
+            $('.comment-form').on('submit', function (event) {
+                event.preventDefault();
+                ajax_post_comment("{{ article.get_absolute_url }}", event.currentTarget[1].value, event.currentTarget[2].value)
             });
-        </script>
+            $('.reply-comment').click(function () {
+                $('.reply-comment').toggle(false);
+                $(this).closest('.card').children(".reply-comment").toggle();
+            });
+            $(".bt-comment-like").click(function () {
+                ajax_like_comment("{{ article.get_absolute_url }}", $(this).closest('.card').attr('id'), 1)
+            });
+            $(".bt-comment-dislike").click(function () {
+                ajax_like_comment("{{ article.get_absolute_url }}", $(this).closest('.card').attr('id'), -1)
+            });
+        });
+    </script>
 </head>
 {% if comments.count > 0 %}
+    {% load comments_tags %}
     <div class="container my-2 py-5">
         <div class="row d-flex justify-content-center">
             <div class="col-md-12 col-lg-10 col-xl-8">
                 {% for comment in comments %}
 
-                    <div class="card mb-2">
+                    <div id="comment-{{ comment.id }}" class="card mb-2">
                         <div class="card-body">
                             <div class="d-flex flex-start align-items-center">
                                 <img class="rounded-circle shadow-1-strong me-3"
@@ -43,13 +50,17 @@
                             </p>
 
                             <div class="small d-flex justify-content-start">
-                                <a href="#!" class="d-flex align-items-center me-3">
-                                    <!-- <i class="far fa-thumbs-up me-2"></i> -->
-                                    <p class="mb-0">+</p>
-                                </a>
-                                <a href="#!" class="d-flex align-items-center me-3">
-                                    <p class="mb-0">-</p>
-                                </a>
+                                <div class="bt-comment-like d-flex align-items-center me-3 text-muted">
+                                    <i id="icon-like"
+                                       class="bi bi-hand-thumbs-up{% if comment.my_like == 1 %}-fill{% endif %}"></i>
+                                </div>
+                                <div class="d-flex align-items-center me-3 text-{% if comment.likes == 0 %}muted{% elif comment.likes > 0 %}success{% else %}danger{% endif %}">
+                                    {{ comment.likes }}
+                                </div>
+                                <div class="bt-comment-dislike d-flex align-items-center me-3 text-muted">
+                                    <i id="icon-dislike"
+                                       class="bi bi-hand-thumbs-down{% if comment.my_like == -1 %}-fill{% endif %}"></i>
+                                </div>
                                 <div class="reply-comment d-flex align-items-center me-3 text-muted">
                                     <i class="bi bi-reply-fill"></i>&nbsp;Ответить
                                 </div>
@@ -57,6 +68,7 @@
                                     <p class="mb-0">Share</p>
                                 </a>
                             </div>
+
                         </div>
 
 
@@ -81,8 +93,10 @@
                         </div>
                     </div>
 
-                    {% for reply in comment.comment_set.all %}
-                        <div class="card mb-2" style="margin-left: 8%">
+
+                    {% get_reply_comments comment user as reply_comments %}
+                    {% for reply in reply_comments %}
+                        <div id="comment-{{ reply.id }}" class="card mb-2" style="margin-left: 8%">
                             <div class="card-body">
                                 <div class="d-flex flex-start align-items-center">
                                     <img class="rounded-circle shadow-1-strong me-3"
@@ -104,13 +118,18 @@
                                 </p>
 
                                 <div class="small d-flex justify-content-start">
-                                    <a href="#!" class="d-flex align-items-center me-3">
-                                        <!-- <i class="far fa-thumbs-up me-2"></i> -->
-                                        <p class="mb-0">+</p>
-                                    </a>
-                                    <a href="#!" class="d-flex align-items-center me-3">
-                                        <p class="mb-0">-</p>
-                                    </a>
+                                    <div class="bt-comment-like d-flex align-items-center me-3 text-muted">
+                                        <i id="icon-like"
+                                           class="bi bi-hand-thumbs-up{% if reply.my_like == 1 %}-fill{% endif %}"></i>
+                                    </div>
+                                    <div class="d-flex align-items-center me-3 text-{% if reply.likes == 0 %}muted{% elif reply.likes > 0 %}success{% else %}danger{% endif %}">
+                                        {{ reply.likes }}
+                                    </div>
+                                    <div class="bt-comment-dislike d-flex align-items-center me-3 text-muted">
+                                        <i id="icon-dislike"
+                                           class="bi bi-hand-thumbs-down{% if reply.my_like == -1 %}-fill{% endif %}"></i>
+                                    </div>
+
                                     <a href="#!" class="d-flex align-items-center me-3">
                                         <p class="mb-0">Share</p>
                                     </a>

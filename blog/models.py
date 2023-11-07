@@ -31,9 +31,6 @@ class Comment(models.Model):
     parent_comment = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
     is_active = models.BooleanField("Статус", default=True)
 
-    class Meta:
-        ordering = ('-date',)
-
     def __str__(self):
         return self.content[0:200]
 

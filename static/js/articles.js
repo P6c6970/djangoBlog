@@ -46,6 +46,26 @@ function ajax_like(article_url, like) {
     return false;
 }
 
+function ajax_like_comment(article_url, comment_id, like) {
+    // создаем AJAX-вызов
+    $.ajax({
+        headers: {"X-CSRFToken": getCookie("csrftoken")},
+        url: article_url + "like_comment/",
+        type: 'POST',
+        data: {"comment_id": comment_id.split('-')[1], 'like_or_dislike': like},
+        // если успешно, то
+        success: function (response) {
+            $('#comments-container').load(article_url + 'show_comments/');
+        },
+        // если ошибка, то
+        error: function (response) {
+            // предупредим об ошибке
+            console.log(response.responseJSON.errors);
+        }
+    });
+    return false;
+}
+
 function ajax_post_comment(article_url, parent_comment, comment_area) {
     // создаем AJAX-вызов
     $.ajax({

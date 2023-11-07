@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Subquery, OuterRef
 from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -9,7 +9,7 @@ from django.views.generic import ListView
 from account.models import CustomUser
 from utils.for_account import login_check
 from .froms import CommentForm
-from .models import Article, LikeArticle, Comment
+from .models import Article, LikeArticle, Comment, LikeComment
 
 
 def home_page(request):
@@ -107,7 +107,11 @@ def article_detail(request, article_slug):
     if user_like is not None:
         user_like = user_like.like_or_dislike
     comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True),
-                                      parent_comment__isnull=True)
+                                      parent_comment__isnull=True).annotate(
+        likes=Coalesce(Sum("likecomment__like_or_dislike"), 0),
+        my_like=Coalesce(
+            Subquery(LikeComment.objects.filter(author=request.user, comment=OuterRef('pk')).values('like_or_dislike')
+                     ), 0)).order_by('-date')
     return render(request, 'detail.html', {'article': article, 'count_like': count_like, 'count_dislike': count_dislike,
                                            'user_like': user_like, 'comment_form': CommentForm, 'comments': comments})
 
@@ -135,6 +139,26 @@ def article_like_or_dislike(request, article_slug):
 
 
 @login_check()
+def comment_like_or_dislike(request, article_slug):
+    """ajax метод для лайков и дизлайков статей"""
+    # request.is_ajax() удалили, поэтому request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+    if request.method == "POST" and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        like_or_dislike = int(request.POST["like_or_dislike"])
+        comment_id = int(request.POST["comment_id"])
+        try:
+            like = LikeComment.objects.get(comment_id=comment_id, author=request.user)
+            if like.like_or_dislike == like_or_dislike:
+                like.delete()
+            else:
+                like.like_or_dislike = like_or_dislike
+                like.save()
+        except LikeComment.DoesNotExist:
+            like = LikeComment(comment_id=comment_id, author=request.user, like_or_dislike=like_or_dislike)
+            like.save()
+    return JsonResponse({}, status=200)
+
+
+@login_check()
 def article_add_comment(request, article_slug):
     """ajax метод для лайков и дизлайков статей"""
     if request.method == "POST" and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
@@ -152,5 +176,10 @@ def article_add_comment(request, article_slug):
 @login_check()
 def article_show_comments(request, article_slug):
     article = get_object_or_404(Article, slug=article_slug, status=True, )
-    comments = Comment.objects.filter(article=article, parent_comment__isnull=True)
-    return render(request, 'show_comments.html', {'article': article, 'comments': comments, 'comment_form': CommentForm})
+    comments = Comment.objects.filter(article=article, parent_comment__isnull=True).annotate(
+        likes=Coalesce(Sum("likecomment__like_or_dislike"), 0),
+        my_like=Coalesce(
+            Subquery(LikeComment.objects.filter(author=request.user, comment=OuterRef('pk')).values('like_or_dislike')
+                     ), 0)).order_by('-date')
+    return render(request, 'show_comments.html',
+                  {'article': article, 'comments': comments, 'comment_form': CommentForm})
