@@ -18,10 +18,20 @@
                             {{ article.content|safe|slice:"80" }}{% if article.content|safe|length > 80 %}...{% endif %}
                             <br/>
                         </p>
+                        {% if article.tags.all %}
+                            <div class="mb-2">
+                                Теги: {% for tag in article.tags.all %}
+                                <span class="badge rounded-pill bg-light text-dark mx-1">
+                        <a class="text-decoration-none text-reset"
+                           href="{% url 'articles_by_tags' tag.slug %}">{{ tag }}</a>
+                        </span>
+                            {% endfor %}
+                            </div>
+                        {% endif %}
                         <div class="d-flex justify-content-between">
-                            <span class="badge bg-info mx-1"><a class="text-decoration-none text-reset"
-                                                                href="{{ article.author.get_absolute_url }}">{{ article.author }}</a></span>
-                            <span class="badge mx-1
+                            <span class="badge rounded-pill bg-info mx-1"><a class="text-decoration-none text-reset"
+                                                                             href="{{ article.author.get_absolute_url }}">{{ article.author }}</a></span>
+                            <span class="badge rounded-pill mx-1
                                     {% if article.likes == 0 %}
                                         bg-info
                                     {% elif article.likes > 0 %}

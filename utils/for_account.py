@@ -1,4 +1,6 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 
 tolerance_levels = {"admin": 0, "moderator": 1, "user": 2}
 
@@ -27,6 +29,18 @@ def login_check(decorator_arg1="user"):
                 return func(arg1, *args, **kwargs)
             return render(arg1, 'error/403.html')
 
+        return wrapper
+
+    return my_decorator
+
+
+def redirect_authenticated():
+    def my_decorator(func):
+        def wrapper(arg1, *args, **kwargs):
+            if not arg1.user.is_authenticated:
+                return func(arg1, *args, **kwargs)
+
+            return HttpResponseRedirect(reverse('profile', args=(arg1.user.id,)))
         return wrapper
 
     return my_decorator

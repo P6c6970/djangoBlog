@@ -21,9 +21,9 @@
     <div class="container pt-5">
         <div class="card rounded p-3 py-4">
             <div class="d-flex justify-content-start">
-                <span class="badge bg-info mx-1"><a class="text-decoration-none text-reset"
-                                                    href="{{ article.author.get_absolute_url }}">{{ article.author }}</a></span>
-                <span class="badge bg-secondary mx-1">{{ article.date }}</span>
+                <span class="badge rounded-pill bg-info mx-1"><a class="text-decoration-none text-reset"
+                                                                 href="{{ article.author.get_absolute_url }}">{{ article.author }}</a></span>
+                <span class="badge rounded-pill bg-secondary mx-1">{{ article.date }}</span>
             </div>
             <h3 class="list-group-item-heading">
                 <h4>{{ article.title }}</h4>
@@ -33,6 +33,16 @@
                 {{ article.content|safe }}
                 <br/>
             </p>
+            {% if article.tags.all %}
+                <div class="mb-2">
+                    Теги: {% for tag in article.tags.all %}
+                    <span class="badge rounded-pill bg-light text-dark mx-1">
+                        <a class="text-decoration-none text-reset"
+                           href="{% url 'articles_by_tags' tag.slug %}">{{ tag }}</a>
+                        </span>
+                {% endfor %}
+                </div>
+            {% endif %}
             <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                 <div class="btn-group">
                     <button id="bt-like"

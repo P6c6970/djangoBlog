@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from taggit.models import Tag
 
 from account.models import CustomUser
 from utils.for_account import login_check
@@ -53,7 +54,28 @@ def articles_liked_list(request):
 
 
 @method_decorator(login_check(), name='dispatch')
-class ArticleForYou(ListView):
+class ArticleByTagListView(ListView):
+    model = Article
+    template_name = 'articles_list.html'
+    context_object_name = 'articles'
+    paginate_by = 10
+    tag = None
+
+    def get_queryset(self):
+        self.tag = Tag.objects.get(slug=self.kwargs['tag'])
+        queryset = Article.objects.filter(status=True, tags__slug=self.tag.slug,).annotate(
+            likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Статьи по тегу "{self.tag.name}"'
+        context['null_articles'] = "Нет статей по такому тегу, но вы всегда можете исправить это"
+        return context
+
+
+@method_decorator(login_check(), name='dispatch')
+class ArticleForYouListView(ListView):
     """
     Представление, выводящее список статей авторов, на которые подписан текущий пользователь
     """
@@ -64,7 +86,7 @@ class ArticleForYou(ListView):
 
     def get_queryset(self):
         authors = self.request.user.following.values_list('id', flat=True)
-        queryset = self.model.objects.all().filter(author__id__in=authors).annotate(
+        queryset = self.model.objects.all().filter(status=True, author__id__in=authors).annotate(
             likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
         return queryset
 

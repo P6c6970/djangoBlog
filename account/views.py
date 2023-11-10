@@ -9,7 +9,7 @@ from django.views.generic.edit import FormView, UpdateView
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 
-from utils.for_account import login_check, check_recaptcha
+from utils.for_account import login_check, redirect_authenticated, check_recaptcha
 
 
 # Вариант регистрации на базе класса FormView
@@ -44,6 +44,7 @@ class RegisterFormView(FormView):
 from django.contrib.auth import login
 
 
+@method_decorator(redirect_authenticated(), name='dispatch')
 class LoginFormView(FormView):
     form_class = AuthFormWithRusError
     # Аналогично регистрации, только используем шаблон аутентификации.
@@ -87,8 +88,6 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from .models import CustomUser
 
-
-# from utils.for_account import check_recaptcha
 
 
 # @check_recaptcha

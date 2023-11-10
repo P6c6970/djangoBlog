@@ -30,10 +30,14 @@
                     </a>
                     <ul class="dropdown-menu pull-right">
                         <li><a class="dropdown-item" href="{% url 'articles' %}">Публикации</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><a class="dropdown-item" href="{% url 'my_articles_list' %}">Ваши</a></li>
                         <li><a class="dropdown-item" href="#">Написать статью</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><a class="dropdown-item" href="{% url 'articles_liked' %}">Понравившиеся</a></li>
                         <li><a class="dropdown-item" href="{% url 'my_following' %}">Подписки</a></li>
                         <li><a class="dropdown-item" href="{% url 'articles_for_you' %}">Для вас</a></li>
@@ -78,7 +82,16 @@
         </div>
     </div>
 </nav>
-{% block content %}
-{% endblock content %}
+<div class="container d-md-flex align-items-stretch">
+
+    <div id="content" class="p-4 p-md-5 pt-5">
+        {% block content %}
+        {% endblock content %}
+    </div>
+    <nav id="sidebar" class="bg-dark bg-gradient">
+        {% include "sidebar.html" %}
+    </nav>
+</div>
+
 </body>
 </html>

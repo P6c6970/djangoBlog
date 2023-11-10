@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',  # для статичеких файлов
 
+    'taggit',
+
     'account.apps.AccountConfig',  # новое приложение аккаунтов
     'blog.apps.BlogConfig',  # блог
 ]
