@@ -7,9 +7,9 @@
     <form action="" method="post" >
         {% csrf_token %}
         <section class="vh-100 gradient-custom">
-            <div class="container py-5 h-100">
-                <div class="row d-flex justify-content-center align-items-center h-100">
-                    <div class="col-12 col-md-8 col-lg-6 col-xl-5" data-bs-theme="dark">
+            <div class="container py-5 h-75">
+                <div class="row d-flex justify-content-center align-items-center h-75">
+                    <div class="col-12 col-md-12 col-lg-10 col-xl-6" data-bs-theme="dark">
                         <div class="card bg-dark text-white" style="border-radius: 1rem;">
                             <div class="card-body p-5 text-center">
 
@@ -21,15 +21,15 @@
 
                                     <div class="form-floating form-white mb-4">
                                         {{ form.username }}
-                                        <label class="form-label" for="typeLoginX">Логин</label>
+                                        <label class="form-label" for="typeLogin">Логин</label>
                                     </div>
                                     <div class="form-floating form-white mb-4">
                                         {{ form.email }}
-                                        <label class="form-label" for="typeEmailX">Email</label>
+                                        <label class="form-label" for="typeEmail">Email</label>
                                     </div>
                                     <div class="form-floating form-white mb-4">
                                         {{ form.bio }}
-                                        <label class="form-label" for="typePassword1X">О себе</label>
+                                        <label class="form-label" for="typePassword1">О себе</label>
                                     </div>
 
                                     {{ form.avatar }}

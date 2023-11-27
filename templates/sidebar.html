@@ -1,16 +1,17 @@
 {% load tagcloud_tags %}
 <div class="p-4 pt-5">
     <div class="mb-5">
-        <h5>Облако тегов</h5>
-        <div class="tagcloud">
-            {% get_tagcloud as tags %}
-            {% for tag in tags %}
-                <span class="badge rounded-pill bg-light text-dark mx-1">
+        <div class="tagcloud card text-white bg-secondary mb-3">
+            <div class="card-header"><h5>Облако тегов</h5></div>
+            <div class="card-body">
+                {% get_tagcloud as tags %}
+                {% for tag in tags %}
+                    <span class="badge rounded-pill bg-light text-dark mx-1 mb-1">
                         <a class="text-decoration-none text-reset"
                            href="{% url 'articles_by_tags' tag.slug %}">{{ tag }} ({{ tag.count }})</a>
                         </span>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     </div>
-
 </div>

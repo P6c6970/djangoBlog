@@ -8,25 +8,44 @@
         <script type="text/javascript" src="js/articles.js"></script>
         <script type="text/javascript">
             $(document).ready(function () {
+                $('[data-toggle="tooltip"]').tooltip();
                 $("#bt-like").click(function () {
                     ajax_like("{{ article.get_absolute_url }}", 1)
                 });
                 $("#bt-dislike").click(function () {
                     ajax_like("{{ article.get_absolute_url }}", -1)
                 });
+                $("#icon-complaint").click(function () {
+                    // элемент, содержащий контент модального окна (например, имеющий id="modal")
+                    const elemModal = document.querySelector('#modal');
+                    // активируем элемент в качестве модального окна с параметрами по умолчанию
+                    const modal = new bootstrap.Modal(elemModal);
+                    // откроем модальное окно
+                    modal.show();
+                });
+                $('.complaint-form').on('submit', function (event) {
+                    event.preventDefault();
+                    ajax_post_complaint("{{ article.get_absolute_url }}", $("input[name = 'type_complaint']:checked").val())
+                });
+
+
             });
+
         </script>
     </head>
 
-    <div class="container pt-5">
-        <div class="card rounded p-3 py-4">
-            <div class="d-flex justify-content-start">
+    <div class="container col-12 col-md-12 col-lg-11 col-xl-11 pt-5 pt-5">
+        <div class="card bg-light rounded p-3 py-4" style="overflow: hidden;">
+            <div class="d-flex bd-highlight mb-3">
                 <span class="badge rounded-pill bg-info mx-1"><a class="text-decoration-none text-reset"
                                                                  href="{{ article.author.get_absolute_url }}">{{ article.author }}</a></span>
                 <span class="badge rounded-pill bg-secondary mx-1">{{ article.date }}</span>
+                <span id="icon-complaint" class="ms-auto bi bi-exclamation-triangle" aria-hidden="true" data-toggle="tooltip"
+                      data-bs-placement="bottom" title="Пожаловаться на нарушение правил публикации"></span>
             </div>
             <h3 class="list-group-item-heading">
-                <h4>{{ article.title }}</h4>
+                <h4>{{ article.title }}{% if not article.status %}<sup class="text-danger">Черновик</sup>{% endif %}
+                </h4>
             </h3>
 
             <p class="text-break">
@@ -72,7 +91,7 @@
                     </div>
                 </div>
                 <div class="float-end mt-2 pt-1">
-                    <button type="submit" class="btn btn-primary btn-sm">Отправить</button>
+                    <button type="submit" class="btn btn-outline-light btn-sm">Отправить</button>
                 </div>
             </div>
         </form>
@@ -80,5 +99,33 @@
             {% include "show_comments.html" %}
         </div>
 
+    </div>
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form class="complaint-form" action="" method="post">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Жалоба</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Что именно вам кажется недопустимым в этом материале?</p>
+                        {% for x,y in complaint_form.fields.type_complaint.choices %}
+                            <div class="form-check">
+                                <label class="form-check-label" for="id_type_complaint_{{ x|add:"-1" }}">
+                                    <input class="form-check-input" type="radio" name="type_complaint"
+                                        id="id_type_complaint_{{ x|add:"-1" }}" value={{ x }}> {{ y }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отправить</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 {% endblock content %}

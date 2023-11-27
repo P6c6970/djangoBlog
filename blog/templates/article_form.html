@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% load static %}
+    <head>
+        <title>{{ title }}</title>
+    </head>
+
+    <div class="container col-12 col-md-12 col-lg-11 col-xl-11 pt-5">
+        <div class="card bg-light rounded p-3 py-4" style="overflow: hidden;">
+            <form action="" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                {{ form.media }}
+                <div class="form-floating form-white mb-4">
+                    {{ form.title }}
+                    <label class="form-label">Заголовок</label>
+                </div>
+                <div class="form-floating form-white mb-4">
+                    {{ form.slug }}
+                    <label class="form-label">Адресс</label>
+                </div>
+                <div class="form-floating form-white mb-4">
+                    {{ form.short_description }}
+                    <label class="form-label">Краткое описание (до 200 символов)</label>
+                </div>
+                <div class="mb-4">
+                    {{ form.content }}
+                </div>
+
+                <div class="form-floating form-white mb-4">
+                    {{ form.tags }}
+                    <label class="form-label">Теги (через запятую)</label>
+                </div>
+                <div class="float-end ">
+                    <button class="btn btn-outline-secondary btn-lg px-4 btn-sm" type="submit">Сохранить черновик
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

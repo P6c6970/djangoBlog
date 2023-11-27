@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django import forms
 from django.utils.decorators import method_decorator
 
-from .forms import SignUpFormWithRusError, AuthFormWithRusError, UserForgotPasswordForm
+from .forms import CustomUserSignUpForm, AuthFormWithRusError, UserForgotPasswordForm
 from django.views.generic.edit import FormView, UpdateView
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
@@ -16,7 +16,7 @@ from utils.for_account import login_check, redirect_authenticated, check_recaptc
 class RegisterFormView(FormView):
     # Указажем какую форму мы будем использовать для регистрации наших пользователей, в нашем случае
     # это UserCreationForm - стандартный класс Django унаследованный, заменил на SignUpForm из forms
-    form_class = SignUpFormWithRusError
+    form_class = CustomUserSignUpForm
     # Ссылка, на которую будет перенаправляться пользователь в случае успешной регистрации.
     # В данном случае указана ссылка на страницу входа для зарегистрированных пользователей.
     success_url = "/account/login/"
@@ -87,7 +87,6 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from .models import CustomUser
-
 
 
 # @check_recaptcha
@@ -172,21 +171,24 @@ class ProfileFollowingCreateView(View):
         return self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     def post(self, request, id):
-        user = get_object_or_404(self.model, id=id)
-        if user.followers.contains(request.user):
-            user.followers.remove(request.user)
-            status = False
-        else:
-            user.followers.add(request.user)
-            status = True
-        data = {
-            'is_follower': status,
-            'count_followers': len(user.followers.all())
-        }
-        return JsonResponse(data, status=200)
+        try:
+            user = self.model.objects.get(id=id)
+            if user.followers.contains(request.user):
+                user.followers.remove(request.user)
+                status = False
+            else:
+                user.followers.add(request.user)
+                status = True
+            data = {
+                'is_follower': status,
+                'count_followers': len(user.followers.all())
+            }
+            return JsonResponse(data, status=200)
+        except self.model.DoesNotExist:
+            return JsonResponse({"message": "Пользователь не существует"}, status=404)
 
 
-from .forms import CustomUserChangeFormRus
+from .forms import CustomUserUpdateForm
 from django.urls import reverse, reverse_lazy
 
 
@@ -194,7 +196,7 @@ from django.urls import reverse, reverse_lazy
 @method_decorator(login_check(), name='dispatch')
 class UpdateFormView(UpdateView):
     model = CustomUser
-    form_class = CustomUserChangeFormRus
+    form_class = CustomUserUpdateForm
     template_name = "update.html"
 
     def get_object(self, queryset=None):

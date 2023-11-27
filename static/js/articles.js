@@ -40,6 +40,7 @@ function ajax_like(article_url, like) {
         // если ошибка, то
         error: function (response) {
             // предупредим об ошибке
+            get_alert(response.responseJSON.errors, "warning")
             console.log(response.responseJSON.errors)
         }
     });
@@ -60,6 +61,7 @@ function ajax_like_comment(article_url, comment_id, like) {
         // если ошибка, то
         error: function (response) {
             // предупредим об ошибке
+            get_alert(response.responseJSON.errors, "warning")
             console.log(response.responseJSON.errors);
         }
     });
@@ -80,9 +82,30 @@ function ajax_post_comment(article_url, parent_comment, comment_area) {
         // если ошибка, то
         error: function (response) {
             // предупредим об ошибке
+            get_alert(response.responseJSON.errors, "warning")
             console.log(response.responseJSON.errors)
         }
     });
     return false;
 }
 
+function ajax_post_complaint(article_url, type_complaint) {
+    // создаем AJAX-вызов
+    $.ajax({
+        headers: {"X-CSRFToken": getCookie("csrftoken")},
+        url: article_url + "add_complaint/",
+        type: 'POST',
+        data: {type_complaint},
+        // если успешно, то
+        success: function (response) {
+            get_alert("Жалоба успешно отправлена", "success")
+        },
+        // если ошибка, то
+        error: function (response) {
+            // предупредим об ошибке
+            get_alert(response.responseJSON.errors, "warning")
+            console.log(response.responseJSON.errors)
+        }
+    });
+    return false;
+}

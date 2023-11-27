@@ -41,7 +41,15 @@
                     // если ошибка, то
                     error: function (response) {
                         // предупредим об ошибке
-                        console.log(response.responseJSON.errors)
+                        if ("responseJSON" in response) {
+                            get_alert(response.responseJSON.message, "warning")
+                            console.log(response.responseJSON.message)
+                        }
+                        else{
+                            get_alert("Ошибка", "warning")
+                            console.log(response.responseJSON.errors)
+                        }
+
                     }
                 });
                 return false;

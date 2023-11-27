@@ -1,7 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from account.forms import SignUpFormWithRusError
+from account.forms import CustomUserSignUpForm, CustomUserUpdateForm
 from account.models import CustomUser
 
 
@@ -11,6 +12,18 @@ class RegisterTest(TestCase):
         self.login_url = reverse('_login')
         self.user_success = {
             'email': 'testemail@gmail.com',
+            'username': 'username',
+            'password1': '7is-W2p-Pg7-xtx',
+            'password2': '7is-W2p-Pg7-xtx',
+        }
+        self.user_not_unique_email = {
+            'email': 'testemail@gmail.com',
+            'username': 'username1',
+            'password1': '7is-W2p-Pg7-xtx',
+            'password2': '7is-W2p-Pg7-xtx',
+        }
+        self.user_not_unique_username = {
+            'email': 'testemail1@gmail.com',
             'username': 'username',
             'password1': '7is-W2p-Pg7-xtx',
             'password2': '7is-W2p-Pg7-xtx',
@@ -48,29 +61,40 @@ class RegisterTest(TestCase):
         self.assertTemplateUsed(response, 'register.html')
 
     def test_can_register_user(self):
-        form = SignUpFormWithRusError(self.user_success)
+        form = CustomUserSignUpForm(self.user_success)
         self.assertTrue(form.is_valid())
 
+    def test_cant_register_user_with_not_unique_email(self):
+        form = CustomUserSignUpForm(self.user_success)
+        form.save()
+        form1 = CustomUserSignUpForm(self.user_not_unique_email)
+        self.assertFalse(form1.is_valid())
+
+    def test_cant_register_user_with_not_unique_username(self):
+        form = CustomUserSignUpForm(self.user_success)
+        form.save()
+        form1 = CustomUserSignUpForm(self.user_not_unique_username)
+        self.assertFalse(form1.is_valid())
+
     def test_cant_register_user_with_short_password(self):
-        form = SignUpFormWithRusError(self.user_short_password)
+        form = CustomUserSignUpForm(self.user_short_password)
         self.assertFalse(form.is_valid())
 
     def test_cant_register_user_with_too_common_password(self):
-        form = SignUpFormWithRusError(self.user_too_common_password)
+        form = CustomUserSignUpForm(self.user_too_common_password)
         self.assertFalse(form.is_valid())
 
     def test_cant_register_user_with_unmatching_passwords(self):
-        form = SignUpFormWithRusError(self.user_unmatching_password)
+        form = CustomUserSignUpForm(self.user_unmatching_password)
         self.assertFalse(form.is_valid())
 
     def test_cant_register_user_with_invalid_email(self):
-        form = SignUpFormWithRusError(self.user_invalid_email)
+        form = CustomUserSignUpForm(self.user_invalid_email)
         self.assertFalse(form.is_valid())
 
 
 class LoginTest(TestCase):
     def setUp(self):
-        self.register_url = reverse('register')
         self.login_url = reverse('_login')
         self.user_success = {
             'username': 'username',
@@ -107,3 +131,51 @@ class LoginTest(TestCase):
     def test_cantlogin_with_no_password(self):
         response = self.client.login(**self.user_cantlogin_with_no_password)
         self.assertFalse(response)
+
+
+class CustomUserUpdateFormTest(TestCase):
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='existing_user',
+            email='existing@example.com',
+            password='password123'
+        )
+        self.form_data = {
+            'username': 'new_user',
+            'email': 'new@example.com',
+            'bio': 'This is a test bio',
+            'avatar': None,
+        }
+
+    def test_clean_email(self):
+        form = CustomUserUpdateForm(data=self.form_data, instance=self.user)
+        self.assertTrue(form.is_valid())
+
+        # Create a new user with the same email
+        duplicate_user = get_user_model().objects.create_user(
+            username='duplicate_user',
+            email='new@example.com',
+            password='password456'
+        )
+
+        form = CustomUserUpdateForm(data=self.form_data, instance=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+        self.assertEqual(form.errors['email'][0], 'Email адрес должен быть уникальным')
+
+    def test_unique_username(self):
+        form = CustomUserUpdateForm(data=self.form_data, instance=self.user)
+        self.assertTrue(form.is_valid())
+
+        # Create a new user with the same username
+        duplicate_user = get_user_model().objects.create_user(
+            username='new_user',
+            email='another@example.com',
+            password='password789'
+        )
+
+        form = CustomUserUpdateForm(data=self.form_data, instance=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('username', form.errors)
+        self.assertEqual(form.errors['username'][0], 'Пользователь с таким именем уже существует.')

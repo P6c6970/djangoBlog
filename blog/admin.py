@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Article, Comment, LikeArticle, LikeComment
+from .models import Article, Comment, LikeArticle, LikeComment, ComplaintArticle
 
 
 class ArticleAdmin(admin.ModelAdmin):
@@ -17,3 +17,4 @@ admin.site.register(Comment, CommentAdmin)
 
 admin.site.register(LikeArticle)
 admin.site.register(LikeComment)
+admin.site.register(ComplaintArticle)

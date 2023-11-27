@@ -3,19 +3,22 @@
 {% block content %}
     <head>
         <title>{{ title }}</title>
+
     </head>
     <div class="container pt-5">
         <h3>{{ title }}:</h3>
         {% if articles %}
             <ul class="list-group gap-3">
                 {% for article in articles %}
-                    <li class="list-group-item rounded">
+                    <li class="list-group-item {% if not article.status %}list-group-item-warning{% else %}list-group-item-secondary{% endif %} list-group-item-action rounded">
                         <h3 class="list-group-item-heading">
                             <h3><a href="{{ article.get_absolute_url }}"
-                                   class="text-decoration-none text-reset">{{ article.title }}</a></h3>
+                                   class="text-decoration-none text-reset">
+                                {{ article.title }}{% if not article.status %}<sup class="text-danger">Черновик</sup>{% endif %}</a></h3>
                         </h3>
-                        <p class="list-group-item-text lead" style="overflow-wrap: break-word;">
-                            {{ article.content|safe|slice:"80" }}{% if article.content|safe|length > 80 %}...{% endif %}
+                        <p class="list-group-item-text lead" data-toggle="tooltip"
+                           title="{{ article.short_description|safe }}" style="overflow-wrap: break-word;">
+                            {{ article.short_description|safe|truncatechars:80 }}
                             <br/>
                         </p>
                         {% if article.tags.all %}

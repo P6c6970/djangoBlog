@@ -28,7 +28,7 @@
             <div class="col-md-12 col-lg-10 col-xl-8">
                 {% for comment in comments %}
 
-                    <div id="comment-{{ comment.id }}" class="card mb-2">
+                    <div id="comment-{{ comment.id }}" class="card bg-light mb-2">
                         <div class="card-body">
                             <div class="d-flex flex-start align-items-center">
                                 <img class="rounded-circle shadow-1-strong me-3"
@@ -87,7 +87,7 @@
                                     </div>
                                 </div>
                                 <div class="float-end mt-2 pt-1">
-                                    <button type="submit" class="btn btn-primary btn-sm">Ответить</button>
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Ответить</button>
                                 </div>
                             </form>
                         </div>
@@ -96,7 +96,7 @@
 
                     {% get_reply_comments comment user as reply_comments %}
                     {% for reply in reply_comments %}
-                        <div id="comment-{{ reply.id }}" class="card mb-2" style="margin-left: 8%">
+                        <div id="comment-{{ reply.id }}" class="card bg-light mb-2" style="margin-left: 8%">
                             <div class="card-body">
                                 <div class="d-flex flex-start align-items-center">
                                     <img class="rounded-circle shadow-1-strong me-3"

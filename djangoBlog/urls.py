@@ -27,6 +27,7 @@ urlpatterns = [
     path('account/', include('account.urls')),
     path('blog/', include('blog.urls')),
     path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("img/favicon.ico")),),
+    path("ckeditor5/", include('django_ckeditor_5.urls'), name="ck_editor_5_upload_file"),
     path('', RedirectView.as_view(url='/blog/home/', permanent=True)),
 ]
 

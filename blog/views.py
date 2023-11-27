@@ -1,16 +1,17 @@
-from django.db.models import Sum, Subquery, OuterRef
+from django.db.models import Sum, Subquery, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
 from taggit.models import Tag
 
 from account.models import CustomUser
 from utils.for_account import login_check
-from .froms import CommentForm
-from .models import Article, LikeArticle, Comment, LikeComment
+from .froms import CommentForm, ArticleForm, ComplaintForm
+from .models import Article, LikeArticle, Comment, LikeComment, ComplaintArticle
 
 
 def home_page(request):
@@ -37,7 +38,7 @@ def articles_list(request):
 
 @login_check()
 def my_articles_list(request):
-    articles = Article.objects.filter(status=True, author=request.user).annotate(
+    articles = Article.objects.filter(author=request.user).annotate(
         likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
     return render(request, 'articles_list.html', {'title': "Ваши статьи", 'articles': articles,
                                                   'null_articles': "У вас еще нет статей"})
@@ -54,6 +55,27 @@ def articles_liked_list(request):
 
 
 @method_decorator(login_check(), name='dispatch')
+class ArticleCreateView(CreateView):
+    form_class = ArticleForm
+    template_name = 'article_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Создание статьи'
+        return context
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        return super(ArticleCreateView, self).form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('my_articles_list')
+
+
+@method_decorator(login_check(), name='dispatch')
 class ArticleByTagListView(ListView):
     model = Article
     template_name = 'articles_list.html'
@@ -63,7 +85,7 @@ class ArticleByTagListView(ListView):
 
     def get_queryset(self):
         self.tag = Tag.objects.get(slug=self.kwargs['tag'])
-        queryset = Article.objects.filter(status=True, tags__slug=self.tag.slug,).annotate(
+        queryset = Article.objects.filter(status=True, tags__slug=self.tag.slug, ).annotate(
             likes=Coalesce(Sum("likearticle__like_or_dislike"), 0))
         return queryset
 
@@ -123,19 +145,23 @@ def count_like_and_dislike(article_slug):
 
 @login_check()
 def article_detail(request, article_slug):
-    article = get_object_or_404(Article, slug=article_slug, status=True, )
+    query = Q(status=True)
+    query.add(Q(author=request.user), Q.OR)
+    query.add(Q(slug=article_slug), Q.AND)
+    article = get_object_or_404(Article, query)
     count_like, count_dislike = count_like_and_dislike(article_slug)
     user_like = LikeArticle.objects.filter(article=article, author=request.user).first()
     if user_like is not None:
         user_like = user_like.like_or_dislike
-    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug, status=True),
+    comments = Comment.objects.filter(article=get_object_or_404(Article, slug=article_slug),
                                       parent_comment__isnull=True).annotate(
         likes=Coalesce(Sum("likecomment__like_or_dislike"), 0),
         my_like=Coalesce(
             Subquery(LikeComment.objects.filter(author=request.user, comment=OuterRef('pk')).values('like_or_dislike')
                      ), 0)).order_by('-date')
     return render(request, 'detail.html', {'article': article, 'count_like': count_like, 'count_dislike': count_dislike,
-                                           'user_like': user_like, 'comment_form': CommentForm, 'comments': comments})
+                                           'user_like': user_like, 'comment_form': CommentForm, 'comments': comments,
+                                           'complaint_form': ComplaintForm})
 
 
 @login_check()
@@ -205,3 +231,17 @@ def article_show_comments(request, article_slug):
                      ), 0)).order_by('-date')
     return render(request, 'show_comments.html',
                   {'article': article, 'comments': comments, 'comment_form': CommentForm})
+
+
+@login_check()
+def add_complaint(request, article_slug):
+    """ajax метод подачи жалобы"""
+    if request.method == "POST" and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        form = ComplaintForm(request.POST)
+        if form.is_valid():
+            ComplaintArticle(article=get_object_or_404(Article, slug=article_slug, status=True, ),
+                             author=request.user,
+                             type_complaint=form.cleaned_data.get("type_complaint"),
+                             ).save()
+            return JsonResponse({}, status=200)
+    return JsonResponse({}, status=500)
